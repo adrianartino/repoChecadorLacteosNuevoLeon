@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from appChecador.views import login_test # Importa tu vista
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('login/', login_test, name='login_test'),
 ]
