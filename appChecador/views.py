@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import logout as auth_logout
 
+from .models import Empleado
+
 def login(request):
     # 1. Verificamos si el usuario ya tiene una sesión iniciada
     if 'usuario_id' in request.session:
@@ -51,7 +53,10 @@ def empleados(request):
     
     nombreUsuarioLogueado = request.session['usuario_nombre']
     
-    return render(request, 'appChecador/checador/empleados.html', {'nombre_usuario': nombreUsuarioLogueado})
+    #Cargar empleados desde la base de datos
+    empleados = Empleado.objects.all()
+    
+    return render(request, 'appChecador/checador/empleados.html', {'nombre_usuario': nombreUsuarioLogueado, 'empleados': empleados})
 
 
     

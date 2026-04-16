@@ -27,6 +27,8 @@ class Empleado(models.Model):
         null=True, 
         blank=True
     )
+    numero_empleado = models.CharField(max_length=20, null=True, blank=True)
+    numero_seguridad_social = models.CharField(max_length=20, null=True, blank=True)
     activo = models.BooleanField(default=True)
 
     def __str__(self):
