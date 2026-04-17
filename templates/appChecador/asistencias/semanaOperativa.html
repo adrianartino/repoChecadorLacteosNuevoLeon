@@ -1,0 +1,121 @@
+{% extends 'appChecador/menu/menu.html' %}
+{% load tz %}
+
+{% block tittle %}
+    <title>Semana operativa - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-head-content">
+                <h2 class="nk-block-title fw-normal">Semana operativa</h2>
+                <div class="nk-block-des mt-2">
+                    <p class="lead">Resumen semanal de jueves a miercoles por empleado.</p>
+                    <p>Periodo actual: <strong>{{ inicio_semana|date:"Y-m-d" }}</strong> al <strong>{{ fin_semana|date:"Y-m-d" }}</strong>.</p>
+                </div>
+                <div class="mt-3">
+                    <a href="#" class="btn btn-outline-primary mr-2 mb-2" data-toggle="modal" data-target="#modalExportarExcel"><em class="icon ni ni-file-xls"></em><span>Exportar Excel</span></a>
+                    <a href="#" class="btn btn-primary mr-2 mb-2" data-toggle="modal" data-target="#modalExportarPdf"><em class="icon ni ni-file-pdf"></em><span>Exportar PDF</span></a>
+                    <a href="#" class="btn btn-outline-dark mr-2 mb-2" data-toggle="modal" data-target="#modalExportarExcelImss"><em class="icon ni ni-file-xls"></em><span>Excel IMSS</span></a>
+                    <a href="#" class="btn btn-dark mb-2" data-toggle="modal" data-target="#modalExportarPdfImss"><em class="icon ni ni-file-pdf"></em><span>PDF IMSS</span></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block">
+            <div class="row g-gs">
+                <div class="col-md-3"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-primary-alt">Empleados</h6><h3 class="mb-0">{{ total_empleados }}</h3></div></div></div>
+                <div class="col-md-3"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-success">Jornadas</h6><h3 class="mb-0">{{ total_jornadas }}</h3></div></div></div>
+                <div class="col-md-3"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-warning">Retardos</h6><h3 class="mb-0">{{ total_retardos }}</h3></div></div></div>
+                <div class="col-md-3"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-danger">Horas extra</h6><h3 class="mb-0">{{ total_horas_extra }}</h3></div></div></div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-bordered card-preview">
+                <div class="card-inner">
+                    <form method="get" class="row g-4 align-end">
+                        <div class="col-md-4">
+                            <label class="form-label" for="fecha_base">Fecha base de la semana</label>
+                            <input type="date" class="form-control" id="fecha_base" name="fecha_base" value="{{ filtros.fecha_base|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="departamento">Departamento</label>
+                            <select class="form-control" id="departamento" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="empleado">Empleado</label>
+                            <select class="form-control" id="empleado" name="empleado">
+                                <option value="">Todos los empleados</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-block"><em class="icon ni ni-filter"></em></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Num</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Nombre</span></th>
+                                {% for dia in dias_semana %}
+                                    <th class="nk-tb-col"><span class="sub-text">{{ dia.abreviatura }}</span></th>
+                                {% endfor %}
+                                <th class="nk-tb-col"><span class="sub-text">Resumen</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fila in filas_semana %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col"><span class="tb-amount">{{ fila.id_biometrico }}</span></td>
+                                    <td class="nk-tb-col">
+                                        <span class="tb-lead">{{ fila.empleado }}</span>
+                                        <span class="tb-sub d-block">{{ fila.departamento }}</span>
+                                    </td>
+                                    {% for columna in fila.columnas %}
+                                        <td class="nk-tb-col">
+                                            {% if columna.texto == 'D' %}
+                                                <span class="tb-amount">D</span>
+                                            {% else %}
+                                                <span class="tb-amount">{% if columna.entrada %}{{ columna.entrada|localtime|date:"H:i" }}{% else %}--:--{% endif %}</span>
+                                                <span class="tb-sub d-block">{% if columna.salida %}{{ columna.salida|localtime|date:"H:i" }}{% else %}--:--{% endif %}</span>
+                                                <span class="tb-sub d-block">{% if columna.horas_extra %}HE: {{ columna.horas_extra }}{% else %}HE: 0{% endif %}</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    <td class="nk-tb-col">
+                                        <span class="tb-amount">Dias: {{ fila.dias_trabajados }}</span>
+                                        <span class="tb-sub d-block">HE: {{ fila.horas_extra_semana }}</span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item"><td class="nk-tb-col" colspan="10"><span class="tb-sub">No hay informacion para la semana y filtros seleccionados.</span></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalExportarExcel"><div class="modal-dialog" role="document"><div class="modal-content"><a href="#" class="close" data-dismiss="modal" aria-label="Close"><em class="icon ni ni-cross"></em></a><div class="modal-header"><h5 class="modal-title">Exportar semana operativa a Excel</h5></div><div class="modal-body"><form method="get" action="{% url 'exportar_semana_operativa_excel' %}"><div class="form-group"><label class="form-label" for="fecha_base_excel">Fecha base</label><input type="date" class="form-control" id="fecha_base_excel" name="fecha_base" value="{{ filtros.fecha_base|date:'Y-m-d' }}"></div><div class="form-group"><label class="form-label" for="departamento_excel">Departamento</label><select class="form-control" id="departamento_excel" name="departamento"><option value="">Todos</option>{% for departamento in departamentos %}<option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>{% endfor %}</select></div><div class="form-group"><label class="form-label" for="empleado_excel">Empleado</label><select class="form-control" id="empleado_excel" name="empleado"><option value="">Todos los empleados</option>{% for empleado in empleados %}<option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>{% endfor %}</select></div><div class="form-group text-right"><button type="submit" class="btn btn-primary">Generar Excel</button></div></form></div></div></div></div>
+    <div class="modal fade" tabindex="-1" id="modalExportarPdf"><div class="modal-dialog" role="document"><div class="modal-content"><a href="#" class="close" data-dismiss="modal" aria-label="Close"><em class="icon ni ni-cross"></em></a><div class="modal-header"><h5 class="modal-title">Exportar semana operativa a PDF</h5></div><div class="modal-body"><form method="get" action="{% url 'exportar_semana_operativa_pdf' %}"><div class="form-group"><label class="form-label" for="fecha_base_pdf">Fecha base</label><input type="date" class="form-control" id="fecha_base_pdf" name="fecha_base" value="{{ filtros.fecha_base|date:'Y-m-d' }}"></div><div class="form-group"><label class="form-label" for="departamento_pdf">Departamento</label><select class="form-control" id="departamento_pdf" name="departamento"><option value="">Todos</option>{% for departamento in departamentos %}<option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>{% endfor %}</select></div><div class="form-group"><label class="form-label" for="empleado_pdf">Empleado</label><select class="form-control" id="empleado_pdf" name="empleado"><option value="">Todos los empleados</option>{% for empleado in empleados %}<option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>{% endfor %}</select></div><div class="form-group text-right"><button type="submit" class="btn btn-primary">Generar PDF</button></div></form></div></div></div></div>
+    <div class="modal fade" tabindex="-1" id="modalExportarExcelImss"><div class="modal-dialog" role="document"><div class="modal-content"><a href="#" class="close" data-dismiss="modal" aria-label="Close"><em class="icon ni ni-cross"></em></a><div class="modal-header"><h5 class="modal-title">Exportar semana operativa a Excel IMSS</h5></div><div class="modal-body"><form method="get" action="{% url 'exportar_semana_operativa_excel_imss' %}"><div class="form-group"><label class="form-label" for="fecha_base_excel_imss">Fecha base</label><input type="date" class="form-control" id="fecha_base_excel_imss" name="fecha_base" value="{{ filtros.fecha_base|date:'Y-m-d' }}"></div><div class="form-group"><label class="form-label" for="departamento_excel_imss">Departamento</label><select class="form-control" id="departamento_excel_imss" name="departamento"><option value="">Todos</option>{% for departamento in departamentos %}<option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>{% endfor %}</select></div><div class="form-group"><label class="form-label" for="empleado_excel_imss">Empleado</label><select class="form-control" id="empleado_excel_imss" name="empleado"><option value="">Todos los empleados</option>{% for empleado in empleados %}<option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>{% endfor %}</select></div><div class="form-group text-right"><button type="submit" class="btn btn-dark">Generar Excel IMSS</button></div></form></div></div></div></div>
+    <div class="modal fade" tabindex="-1" id="modalExportarPdfImss"><div class="modal-dialog" role="document"><div class="modal-content"><a href="#" class="close" data-dismiss="modal" aria-label="Close"><em class="icon ni ni-cross"></em></a><div class="modal-header"><h5 class="modal-title">Exportar semana operativa a PDF IMSS</h5></div><div class="modal-body"><form method="get" action="{% url 'exportar_semana_operativa_pdf_imss' %}"><div class="form-group"><label class="form-label" for="fecha_base_pdf_imss">Fecha base</label><input type="date" class="form-control" id="fecha_base_pdf_imss" name="fecha_base" value="{{ filtros.fecha_base|date:'Y-m-d' }}"></div><div class="form-group"><label class="form-label" for="departamento_pdf_imss">Departamento</label><select class="form-control" id="departamento_pdf_imss" name="departamento"><option value="">Todos</option>{% for departamento in departamentos %}<option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>{% endfor %}</select></div><div class="form-group"><label class="form-label" for="empleado_pdf_imss">Empleado</label><select class="form-control" id="empleado_pdf_imss" name="empleado"><option value="">Todos los empleados</option>{% for empleado in empleados %}<option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>{% endfor %}</select></div><div class="form-group text-right"><button type="submit" class="btn btn-dark">Generar PDF IMSS</button></div></form></div></div></div></div>
+{% endblock %}

@@ -27,7 +27,7 @@
                 <div class="nk-sidebar-element nk-sidebar-head">
                     <div class="nk-sidebar-brand">
                         <a href="html/index.html" class="logo-link nk-sidebar-logo">
-                            <img class="logo-dark logo-img" width='100%' src={% static 'images/fondoLogin/lacteospng.png' %} srcset={% static 'images/fondoLogin/lacteospng.png' %} alt="logo-dark" >
+                            
                         </a>
                     </div>
                     <div class="nk-menu-trigger mr-n2">
@@ -37,15 +37,27 @@
                 <div class="nk-sidebar-element">
                     <div class="nk-sidebar-body" data-simplebar>
                         <div class="nk-sidebar-content">
+                            <div class="text-center px-3 pt-0 pb-0">
+                                <img class="img-fluid mb-1" style="max-width: 150px;" src="{% static 'images/fondoLogin/lacteospng.png' %}" alt="Lacteos Nuevo Leon">
+                                <h6 class="mb-0" style="font-size: 1rem; font-weight: 700; color: #1f2937;">Checador Lacteos Nuevo Leon</h6>
+                            </div>
                             <div class="nk-sidebar-menu">
                                 <ul class="nk-menu">
+                                    <li class="nk-menu-item">
+                                        <form method="post" action="{% url 'sincronizar_checadas' %}" class="px-3 pt-1 pb-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary btn-block">
+                                                <em class="icon ni ni-reload"></em><span>Sincronizar checadas</span>
+                                            </button>
+                                        </form>
+                                    </li>
                                     
                                     <li class="nk-menu-heading">
                                         <h6 class="overline-title text-primary-alt">Dashboards</h6>
                                     </li><!-- .nk-menu-item -->
                                     <li class="nk-menu-item">
-                                        <a href="html/index.html" class="nk-menu-link">
-                                            <span class="nk-menu-icon"><em class="icon ni ni-bitcoin-cash"></em></span>
+                                        <a href="/inicio/" class="nk-menu-link">
+                                            <span class="nk-menu-icon"><em class="icon ni ni-dashboard-fill"></em></span>
                                             <span class="nk-menu-text">Dashboard Checador</span>
                                         </a>
                                     </li><!-- .nk-menu-item -->
@@ -61,19 +73,7 @@
                                         </a>
                                         <ul class="nk-menu-sub">
                                             <li class="nk-menu-item">
-                                                <a href="html/user-list-regular.html" class="nk-menu-link"><span class="nk-menu-text">User List - Regular</span></a>
-                                            </li>
-                                            <li class="nk-menu-item">
-                                                <a href="html/user-list-compact.html" class="nk-menu-link"><span class="nk-menu-text">User List - Compact</span></a>
-                                            </li>
-                                            <li class="nk-menu-item">
-                                                <a href="html/user-details-regular.html" class="nk-menu-link"><span class="nk-menu-text">User Details - Regular</span></a>
-                                            </li>
-                                            <li class="nk-menu-item">
-                                                <a href="html/user-profile-regular.html" class="nk-menu-link"><span class="nk-menu-text">User Profile - Regular</span></a>
-                                            </li>
-                                            <li class="nk-menu-item">
-                                                <a href="html/user-card.html" class="nk-menu-link"><span class="nk-menu-text">User Contact - Card</span> <span class="nk-menu-badge badge-warning">New</span></a>
+                                                <a href="/usuarios/" class="nk-menu-link"><span class="nk-menu-text">Usuarios del sistema</span></a>
                                             </li>
                                         </ul><!-- .nk-menu-sub -->
                                     </li><!-- .nk-menu-item -->
@@ -87,7 +87,10 @@
                                                 <a href="/empleados/" class="nk-menu-link"><span class="nk-menu-text">Empleados Checador</span></a>
                                             </li>
                                             <li class="nk-menu-item">
-                                                <a href="html/kyc-details-regular.html" class="nk-menu-link"><span class="nk-menu-text">KYC Details - Regular</span></a>
+                                                <a href="/departamentos/" class="nk-menu-link"><span class="nk-menu-text">Departamentos</span></a>
+                                            </li>
+                                            <li class="nk-menu-item">
+                                                <a href="/horarios/" class="nk-menu-link"><span class="nk-menu-text">Horarios</span></a>
                                             </li>
                                         </ul><!-- .nk-menu-sub -->
                                     </li><!-- .nk-menu-item -->
@@ -98,10 +101,22 @@
                                         </a>
                                         <ul class="nk-menu-sub">
                                             <li class="nk-menu-item">
-                                                <a href="html/transaction-basic.html" class="nk-menu-link"><span class="nk-menu-text">Tranx List - Basic</span></a>
+                                                <a href="/asistencias/hoy/" class="nk-menu-link"><span class="nk-menu-text">Asistencias del dia</span></a>
                                             </li>
                                             <li class="nk-menu-item">
-                                                <a href="html/transaction-crypto.html" class="nk-menu-link"><span class="nk-menu-text">Tranx List - Crypto</span></a>
+                                                <a href="/asistencias/resumen/departamento/" class="nk-menu-link"><span class="nk-menu-text">Resumen por departamento</span></a>
+                                            </li>
+                                            <li class="nk-menu-item">
+                                                <a href="/asistencias/resumen/empleado/" class="nk-menu-link"><span class="nk-menu-text">Resumen por empleado</span></a>
+                                            </li>
+                                            <li class="nk-menu-item">
+                                                <a href="/asistencias/semana-operativa/" class="nk-menu-link"><span class="nk-menu-text">Semana operativa</span></a>
+                                            </li>
+                                            <li class="nk-menu-item">
+                                                <a href="/asistencias/retardos/" class="nk-menu-link"><span class="nk-menu-text">Retardos</span></a>
+                                            </li>
+                                            <li class="nk-menu-item">
+                                                <a href="/asistencias/horas-extra/" class="nk-menu-link"><span class="nk-menu-text">Horas extra</span></a>
                                             </li>
                                         </ul><!-- .nk-menu-sub -->
                                     </li><!-- .nk-menu-item -->

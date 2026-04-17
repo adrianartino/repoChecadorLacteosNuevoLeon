@@ -1,0 +1,93 @@
+{% extends 'appChecador/menu/menu.html' %}
+
+{% block tittle %}
+    <title>Resumen por departamento - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-head-content">
+                <h2 class="nk-block-title fw-normal">Resumen por departamento</h2>
+                <div class="nk-block-des">
+                    <p class="lead">Vista resumida de asistencias por departamento para una fecha administrativa.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block">
+            <div class="row g-gs">
+                <div class="col-md-4"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-primary-alt">Departamentos</h6><h3 class="mb-0">{{ total_departamentos }}</h3></div></div></div>
+                <div class="col-md-4"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-warning">Retardos</h6><h3 class="mb-0">{{ total_retardos }}</h3></div></div></div>
+                <div class="col-md-4"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-success">Jornadas</h6><h3 class="mb-0">{{ total_jornadas }}</h3></div></div></div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-bordered card-preview">
+                <div class="card-inner">
+                    <form method="get" class="row g-4 align-end">
+                        <div class="col-md-4">
+                            <label class="form-label" for="fecha">Fecha administrativa</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="departamento">Departamento</label>
+                            <select class="form-control" id="departamento" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="empleado">Empleado</label>
+                            <select class="form-control" id="empleado" name="empleado">
+                                <option value="">Todos</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-block"><em class="icon ni ni-filter"></em></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Departamento</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Jornadas</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Completas</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Retardos</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Con extra</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Sin salida</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in resumen %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col"><span class="tb-lead">{{ item.departamento }}</span></td>
+                                    <td class="nk-tb-col">{{ item.total_jornadas }}</td>
+                                    <td class="nk-tb-col">{{ item.completas }}</td>
+                                    <td class="nk-tb-col">{{ item.retardos }}</td>
+                                    <td class="nk-tb-col">{{ item.con_extra }}</td>
+                                    <td class="nk-tb-col">{{ item.sin_salida }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item"><td class="nk-tb-col" colspan="6"><span class="tb-sub">No hay informacion para los filtros seleccionados.</span></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

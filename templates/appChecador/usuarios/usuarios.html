@@ -1,0 +1,193 @@
+{% extends 'appChecador/menu/menu.html' %}
+
+{% block tittle %}
+    <title>Usuarios del Sistema - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-between g-3">
+                <div class="nk-block-head-content">
+                    <h2 class="nk-block-title fw-normal">Usuarios del sistema</h2>
+                    <div class="nk-block-des">
+                        <p class="lead">Administracion de usuarios que pueden iniciar sesion en el sistema.</p>
+                    </div>
+                </div>
+                <div class="nk-block-head-content">
+                    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#modalUsuario">
+                        <em class="icon ni ni-plus"></em><span>Agregar usuario</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Usuario</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Correo</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Tipo</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Estatus</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col">
+                                        <div class="user-card">
+                                            <div class="user-avatar bg-dim-primary d-none d-sm-flex">
+                                                <span>{{ usuario.username|slice:":2"|upper }}</span>
+                                            </div>
+                                            <div class="user-info">
+                                                <span class="tb-lead">{{ usuario.username }}</span>
+                                                {% if usuario.first_name or usuario.last_name %}
+                                                    <span>{{ usuario.first_name }} {{ usuario.last_name }}</span>
+                                                {% else %}
+                                                    <span>Sin nombre capturado</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        {% if usuario.email %}
+                                            <span class="tb-amount">{{ usuario.email }}</span>
+                                        {% else %}
+                                            <span class="tb-sub">Sin correo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        {% if usuario.is_superuser %}
+                                            <span class="badge badge-dot badge-primary">Administrador</span>
+                                        {% else %}
+                                            <span class="badge badge-dot badge-info">Usuario</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        {% if usuario.is_active %}
+                                            <span class="badge badge-dot badge-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge badge-dot badge-danger">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <a href="{% url 'cambiar_password_usuario' usuario.id %}" class="btn btn-sm btn-primary">Cambiar contrasena</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col" colspan="5">
+                                        <span class="tb-sub">No hay usuarios registrados.</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalUsuario">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo usuario</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="username">Nombre de usuario</label>
+                                    <div class="form-control-wrap">
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="email">Correo</label>
+                                    <div class="form-control-wrap">
+                                        <input type="email" class="form-control" id="email" name="email">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="first_name">Nombre</label>
+                                    <div class="form-control-wrap">
+                                        <input type="text" class="form-control" id="first_name" name="first_name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="last_name">Apellido</label>
+                                    <div class="form-control-wrap">
+                                        <input type="text" class="form-control" id="last_name" name="last_name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="password">Contrasena</label>
+                                    <div class="form-control-wrap">
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="password_confirm">Confirmar contrasena</label>
+                                    <div class="form-control-wrap">
+                                        <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="is_superuser" name="is_superuser">
+                                    <label class="custom-control-label" for="is_superuser">Crear como administrador</label>
+                                </div>
+                            </div>
+                            <div class="col-12 text-right">
+                                <button type="submit" class="btn btn-primary">Guardar usuario</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error_creacion %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                $('#modalUsuario').modal('show');
+            });
+        </script>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    title: '{% if message.tags == "success" %}Correcto!{% else %}Error!{% endif %}',
+                    text: '{{ message|escapejs }}',
+                    icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+                    confirmButtonText: '{% if message.tags == "success" %}Aceptar{% else %}Reintentar{% endif %}'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

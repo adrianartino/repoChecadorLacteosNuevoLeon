@@ -1,0 +1,96 @@
+{% extends 'appChecador/menu/menu.html' %}
+{% load tz %}
+
+{% block tittle %}
+    <title>Resumen por empleado - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-head-content">
+                <h2 class="nk-block-title fw-normal">Resumen por empleado</h2>
+                <div class="nk-block-des">
+                    <p class="lead">Vista concentrada por empleado para una fecha administrativa.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block">
+            <div class="row g-gs">
+                <div class="col-md-4"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-primary-alt">Empleados</h6><h3 class="mb-0">{{ total_empleados }}</h3></div></div></div>
+                <div class="col-md-4"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-warning">Retardos</h6><h3 class="mb-0">{{ total_retardos }}</h3></div></div></div>
+                <div class="col-md-4"><div class="card card-bordered"><div class="card-inner"><h6 class="overline-title text-success">Horas extra</h6><h3 class="mb-0">{{ total_horas_extra }}</h3></div></div></div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-bordered card-preview">
+                <div class="card-inner">
+                    <form method="get" class="row g-4 align-end">
+                        <div class="col-md-4">
+                            <label class="form-label" for="fecha">Fecha administrativa</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="departamento">Departamento</label>
+                            <select class="form-control" id="departamento" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="empleado">Empleado</label>
+                            <select class="form-control" id="empleado" name="empleado">
+                                <option value="">Todos</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-block"><em class="icon ni ni-filter"></em></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Empleado</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Departamento</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Horario</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Entrada</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Salida</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Retardo</span></th>
+                                <th class="nk-tb-col"><span class="sub-text">Horas extra</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in resumen %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col"><span class="tb-lead">{{ item.empleado }}</span><span class="tb-sub d-block">{{ item.id_biometrico }}</span></td>
+                                    <td class="nk-tb-col">{{ item.departamento }}</td>
+                                    <td class="nk-tb-col">{{ item.horario }}</td>
+                                    <td class="nk-tb-col">{% if item.entrada %}{{ item.entrada|localtime|date:"Y-m-d h:i:s A" }}{% else %}Sin entrada{% endif %}</td>
+                                    <td class="nk-tb-col">{% if item.salida %}{{ item.salida|localtime|date:"Y-m-d h:i:s A" }}{% else %}Sin salida{% endif %}</td>
+                                    <td class="nk-tb-col">{% if item.retardo %}<span class="badge badge-dot badge-warning">Si</span>{% else %}<span class="badge badge-dot badge-success">No</span>{% endif %}</td>
+                                    <td class="nk-tb-col">{{ item.horas_extra }}<span class="tb-sub d-block">{{ item.minutos_extra }} min</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item"><td class="nk-tb-col" colspan="7"><span class="tb-sub">No hay informacion para los filtros seleccionados.</span></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

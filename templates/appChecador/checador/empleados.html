@@ -17,10 +17,22 @@
         </div><!-- .nk-block-head -->
         <div class="nk-block nk-block-lg">
             <div class="nk-block-head">
-                <div class="nk-block-head-content">
-                    <h4 class="nk-block-title">Lista de empleados</h4>
-                    <div class="nk-block-des">
-                        <p>Empleados traídos desde el checador de Hikvisión. Importante: Configurar su Departamento como primer paso.</p>
+                <div class="nk-block-between g-3">
+                    <div class="nk-block-head-content">
+                        <h4 class="nk-block-title">Lista de empleados</h4>
+                        <div class="nk-block-des">
+                            <p>Empleados traídos desde el checador de Hikvisión. Importante: Configurar su Departamento como primer paso.</p>
+                        </div>
+                    </div>
+                    <div class="nk-block-head-content">
+                        <a href="{% url 'exportar_empleados_sin_configurar' %}" class="btn btn-outline-primary">
+                            <em class="icon ni ni-download-cloud"></em><span>Exportar sin configurar</span>
+                        </a>
+                    </div>
+                    <div class="nk-block-head-content">
+                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#modalImportarEmpleados">
+                            <em class="icon ni ni-upload-cloud"></em><span>Importar excel</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -30,9 +42,11 @@
                         <thead>
                             <tr class="nk-tb-item nk-tb-head">
                                 <th class="nk-tb-col"><span class="sub-text">Empleado</span></th>
+                                <th class="nk-tb-col tb-col-mb"><span class="sub-text">Puesto</span></th>
                                 <th class="nk-tb-col tb-col-mb"><span class="sub-text">Departamento</span></th>
                                 <th class="nk-tb-col tb-col-md"><span class="sub-text">Estatus</span></th>
-                                <th class="nk-tb-col tb-col-lg"><span class="sub-text">Horarios</span></th>
+                                <th class="nk-tb-col tb-col-lg"><span class="sub-text">Horario</span></th>
+                                <th class="nk-tb-col tb-col-lg"><span class="sub-text">Editar</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -54,6 +68,13 @@
                                         </div>
                                     </div>
                                 </td>
+                                <td class="nk-tb-col tb-col-mb">
+                                    {% if empleado.puesto %}
+                                    <span class="tb-amount">{{ empleado.puesto }}</span>
+                                    {% else %}
+                                    <span class="tb-amount">Puesto no asignado</span>
+                                    {% endif %}
+                                </td>
                                 <td class="nk-tb-col tb-col-mb" data-order="35040.34">
                                     {% if empleado.departamento %}
                                     <span class="tb-amount">{{ empleado.departamento }}</span>
@@ -68,10 +89,15 @@
                                     <span class="badge badge-dot badge-danger">Inactivo</span>
                                     {% endif %}
                                 </td>
-                                <td class="nk-tb-col tb-col-lg" data-order="Email Verified - Kyc Unverified">
-                                    <ul class="list-status">
-                                        <li><em class="icon text-success ni ni-check-circle"></em> <span>Email</span></li>
-                                    </ul>
+                                <td class="nk-tb-col tb-col-md">
+                                    {% if empleado.horario %}
+                                    <span class="tb-amount">{{ empleado.horario.nombre_turno }}</span>
+                                    {% else %}
+                                    <span class="badge badge-dot badge-danger">Sin horario</span>
+                                    {% endif %}
+                                </td>
+                                <td class="nk-tb-col tb-col-md">
+                                    <a href="{% url 'editar_empleado' empleado.id %}" class="btn btn-sm btn-primary">Editar</a>
                                 </td>
                             </tr><!-- .nk-tb-item  -->
                             {% endfor %}
@@ -81,4 +107,46 @@
             </div><!-- .card-preview -->
         </div> <!-- nk-block -->
     </div><!-- .components-preview -->
+
+    <div class="modal fade" tabindex="-1" id="modalImportarEmpleados">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Importar empleados desde Excel</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'importar_empleados_sin_configurar' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label" for="archivo_excel">Archivo Excel</label>
+                            <div class="form-control-wrap">
+                                <input type="file" class="form-control" id="archivo_excel" name="archivo_excel" accept=".xlsx,.xlsm,.xltx,.xltm" required>
+                            </div>
+                            <span class="form-note">Solo se actualizaran empleados existentes por ID biometrico.</span>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary">Importar archivo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    title: '{% if message.tags == "success" %}Correcto!{% else %}Error!{% endif %}',
+                    text: '{{ message|escapejs }}',
+                    icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+                    confirmButtonText: 'Aceptar'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

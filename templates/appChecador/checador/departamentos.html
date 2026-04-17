@@ -1,0 +1,106 @@
+{% extends 'appChecador/menu/menu.html' %}
+
+{% block tittle %}
+    <title>Departamentos - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-between g-3">
+                <div class="nk-block-head-content">
+                    <h2 class="nk-block-title fw-normal">Departamentos</h2>
+                    <div class="nk-block-des">
+                        <p class="lead">Listado de departamentos configurados para el checador.</p>
+                    </div>
+                </div>
+                <div class="nk-block-head-content">
+                    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#modalDepartamento">
+                        <em class="icon ni ni-plus"></em><span>Agregar departamento</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Departamento</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Empleados</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for departamento in departamentos %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col">
+                                        <span class="tb-lead">{{ departamento.nombre }}</span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">{{ departamento.total_empleados }}</span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col" colspan="2">
+                                        <span class="tb-sub">No hay departamentos registrados.</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalDepartamento">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo departamento</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label" for="nombre">Nombre del departamento</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="usa_corte_madrugada" name="usa_corte_madrugada">
+                                <label class="custom-control-label" for="usa_corte_madrugada">Usa corte de madrugada</label>
+                            </div>
+                            <span class="form-note">Si se activa, las checadas antes de las 6:00 AM cuentan para el dia anterior.</span>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary">Guardar departamento</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    title: '{% if message.tags == "success" %}Correcto!{% else %}Error!{% endif %}',
+                    text: '{{ message|escapejs }}',
+                    icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+                    confirmButtonText: 'Aceptar'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

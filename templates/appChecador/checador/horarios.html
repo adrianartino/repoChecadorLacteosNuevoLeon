@@ -1,0 +1,199 @@
+{% extends 'appChecador/menu/menu.html' %}
+
+{% block tittle %}
+    <title>Horarios - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-between g-3">
+                <div class="nk-block-head-content">
+                    <h2 class="nk-block-title fw-normal">Horarios</h2>
+                    <div class="nk-block-des">
+                        <p class="lead">Listado de horarios configurados para asignar a empleados.</p>
+                    </div>
+                </div>
+                <div class="nk-block-head-content">
+                    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#modalHorario">
+                        <em class="icon ni ni-plus"></em><span>Agregar horario</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Turno</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Horario</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Corte madrugada</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Tolerancia</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Horas extra</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Empleados</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Editar</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for horario in horarios %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col">
+                                        <span class="tb-lead">{{ horario.nombre_turno }}</span>
+                                        <span class="tb-sub d-block">
+                                            {% if horario.dia_semana is not None %}{{ horario.get_dia_semana_display }}{% else %}General{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">{{ horario.hora_entrada }} - {{ horario.hora_salida }}</span>
+                                        <span class="tb-sub d-block">
+                                            {% if horario.inicio_entrada %}
+                                                Inicio de entrada: {{ horario.inicio_entrada }}
+                                            {% else %}
+                                                Sin inicio de entrada definido
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        {% if horario.usa_corte_madrugada %}
+                                            <span class="badge badge-dot badge-warning">Si aplica</span>
+                                        {% else %}
+                                            <span class="badge badge-dot badge-success">No aplica</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">{{ horario.tolerancia_entrada }} min</span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">Minimo: {{ horario.minimo_minutos_para_contar_extra }} min</span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">{{ horario.total_empleados }}</span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <a href="{% url 'editar_horario' horario.id %}" class="btn btn-sm btn-primary">Editar</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col" colspan="7">
+                                        <span class="tb-sub">No hay horarios registrados.</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalHorario">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo horario</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="nombre_turno">Nombre del turno</label>
+                                    <div class="form-control-wrap">
+                                        <input type="text" class="form-control" id="nombre_turno" name="nombre_turno" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="dia_semana">Dia de la semana</label>
+                                    <div class="form-control-wrap">
+                                        <select class="form-control" id="dia_semana" name="dia_semana" required>
+                                            <option value="">General</option>
+                                            {% for valor, etiqueta in dias_semana %}
+                                                <option value="{{ valor }}">{{ etiqueta }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="hora_entrada">Hora de entrada</label>
+                                    <div class="form-control-wrap">
+                                        <input type="time" class="form-control" id="hora_entrada" name="hora_entrada" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="hora_salida">Hora de salida</label>
+                                    <div class="form-control-wrap">
+                                        <input type="time" class="form-control" id="hora_salida" name="hora_salida" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label d-block">Corte de madrugada</label>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="usa_corte_madrugada" name="usa_corte_madrugada">
+                                        <label class="custom-control-label" for="usa_corte_madrugada">La madrugada cuenta para el día anterior</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="tolerancia_entrada">Tolerancia de entrada</label>
+                                    <div class="form-control-wrap">
+                                        <input type="number" class="form-control" id="tolerancia_entrada" name="tolerancia_entrada" min="0" value="15">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="inicio_entrada">Inicio permitido de entrada</label>
+                                    <div class="form-control-wrap">
+                                        <input type="time" class="form-control" id="inicio_entrada" name="inicio_entrada">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="minimo_minutos_para_contar_extra">Minimo para contar extra</label>
+                                    <div class="form-control-wrap">
+                                        <input type="number" class="form-control" id="minimo_minutos_para_contar_extra" name="minimo_minutos_para_contar_extra" min="0" value="30">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 text-right">
+                                <button type="submit" class="btn btn-primary">Guardar horario</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    title: '{% if message.tags == "success" %}Correcto!{% else %}Error!{% endif %}',
+                    text: '{{ message|escapejs }}',
+                    icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+                    confirmButtonText: 'Aceptar'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

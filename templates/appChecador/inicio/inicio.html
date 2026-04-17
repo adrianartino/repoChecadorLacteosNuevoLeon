@@ -9,32 +9,9 @@
     <div class="nk-block-head nk-block-head-sm">
         <div class="nk-block-between">
             <div class="nk-block-head-content">
-                <h3 class="nk-block-title page-title">Crypto Dashboard</h3>
+                <h3 class="nk-block-title page-title">Dashboard Checador</h3>
                 <div class="nk-block-des text-soft">
-                    <p>Welcome to DashLite Dashboard Template.</p>
-                </div>
-            </div><!-- .nk-block-head-content -->
-            <div class="nk-block-head-content">
-                <div class="toggle-wrap nk-block-tools-toggle">
-                    <a href="#" class="btn btn-icon btn-trigger toggle-expand mr-n1" data-target="pageMenu"><em class="icon ni ni-more-v"></em></a>
-                    <div class="toggle-expand-content" data-content="pageMenu">
-                        <ul class="nk-block-tools g-3">
-                            <li><a href="#" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-download-cloud"></em><span>Export</span></a></li>
-                            <li><a href="#" class="btn btn-white btn-dim btn-outline-primary"><em class="icon ni ni-reports"></em><span>Reports</span></a></li>
-                            <li class="nk-block-tools-opt">
-                                <div class="drodown">
-                                    <a href="#" class="dropdown-toggle btn btn-icon btn-primary" data-toggle="dropdown"><em class="icon ni ni-plus"></em></a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <ul class="link-list-opt no-bdr">
-                                            <li><a href="#"><em class="icon ni ni-user-add-fill"></em><span>Add User</span></a></li>
-                                            <li><a href="#"><em class="icon ni ni-coin-alt-fill"></em><span>Add Order</span></a></li>
-                                            <li><a href="#"><em class="icon ni ni-note-add-fill-c"></em><span>Add Page</span></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
+                    <p>Panel principal para sincronizar y revisar la informacion del checador.</p>
                 </div>
             </div><!-- .nk-block-head-content -->
         </div><!-- .nk-block-between -->
@@ -421,4 +398,18 @@
             </div><!-- .col -->
         </div><!-- .row -->
     </div><!-- .nk-block -->
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    title: '{% if message.tags == "success" %}Correcto!{% else %}Error!{% endif %}',
+                    text: '{{ message|escapejs }}',
+                    icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+                    confirmButtonText: 'Aceptar'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

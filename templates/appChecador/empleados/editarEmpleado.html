@@ -1,0 +1,213 @@
+{% extends 'appChecador/menu/menu.html' %}
+
+{% block tittle %}
+    <title>Editar Empleado - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-head-content">
+                <h2 class="nk-block-title fw-normal">Editar empleado</h2>
+                <div class="nk-block-des">
+                    <p class="lead">Actualiza la configuracion del empleado seleccionado.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <div class="row g-gs">
+                        <div class="col-lg-4">
+                            <div class="card card-bordered h-100">
+                                <div class="card-inner">
+                                    <div class="user-card user-card-s2 mb-4">
+                                        <div class="user-avatar lg bg-primary">
+                                            <span>{{ empleado.id_biometrico }}</span>
+                                        </div>
+                                        <div class="user-info">
+                                            <div class="badge badge-dim badge-outline-primary">ID Biometrico</div>
+                                            <h5>{{ empleado.nombre }}</h5>
+                                        </div>
+                                    </div>
+
+                                    <ul class="data-list is-compact">
+                                        <li class="data-item">
+                                            <div class="data-col">
+                                                <div class="data-label">Puesto</div>
+                                                <div class="data-value">
+                                                    {% if empleado.puesto %}
+                                                        {{ empleado.puesto }}
+                                                    {% else %}
+                                                        No asignado
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="data-item">
+                                            <div class="data-col">
+                                                <div class="data-label">Departamento</div>
+                                                <div class="data-value">
+                                                    {% if empleado.departamento %}
+                                                        {{ empleado.departamento.nombre }}
+                                                    {% else %}
+                                                        No asignado
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="data-item">
+                                            <div class="data-col">
+                                                <div class="data-label">Numero de empleado</div>
+                                                <div class="data-value">
+                                                    {% if empleado.numero_empleado %}
+                                                        {{ empleado.numero_empleado }}
+                                                    {% else %}
+                                                        No asignado
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="data-item">
+                                            <div class="data-col">
+                                                <div class="data-label">NSS</div>
+                                                <div class="data-value">
+                                                    {% if empleado.numero_seguridad_social %}
+                                                        {{ empleado.numero_seguridad_social }}
+                                                    {% else %}
+                                                        No asignado
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="data-item">
+                                            <div class="data-col">
+                                                <div class="data-label">Estatus</div>
+                                                <div class="data-value">
+                                                    {% if empleado.activo %}
+                                                        <span class="badge badge-dot badge-success">Activo</span>
+                                                    {% else %}
+                                                        <span class="badge badge-dot badge-danger">Inactivo</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card card-bordered h-100">
+                                <div class="card-inner">
+                                    <div class="card-title-group align-start mb-4">
+                                        <div class="card-title">
+                                            <h5 class="title">Datos del empleado</h5>
+                                            <p>Modifica la informacion y guarda los cambios.</p>
+                                        </div>
+                                    </div>
+
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="row g-4">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="nombre">Nombre</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" class="form-control" id="nombre" name="nombre" value="{{ empleado.nombre }}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="puesto">Puesto</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" class="form-control" id="puesto" name="puesto" value="{{ empleado.puesto|default:'' }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="numero_empleado">Numero de empleado</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" class="form-control" id="numero_empleado" name="numero_empleado" value="{{ empleado.numero_empleado|default:'' }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="numero_seguridad_social">Numero de seguridad social</label>
+                                                    <div class="form-control-wrap">
+                                                        <input type="text" class="form-control" id="numero_seguridad_social" name="numero_seguridad_social" value="{{ empleado.numero_seguridad_social|default:'' }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="departamento">Departamento</label>
+                                                    <div class="form-control-wrap">
+                                                        <select class="form-control" id="departamento" name="departamento">
+                                                            <option value="">Sin departamento</option>
+                                                            {% for departamento in departamentos %}
+                                                                <option value="{{ departamento.id }}" {% if empleado.departamento_id == departamento.id %}selected{% endif %}>
+                                                                    {{ departamento.nombre }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label d-block">Estatus</label>
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="activo" name="activo" {% if empleado.activo %}checked{% endif %}>
+                                                        <label class="custom-control-label" for="activo">Empleado activo</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="horario">Horario asignado</label>
+                                                    <div class="form-control-wrap">
+                                                        <select class="form-control" id="horario" name="horario">
+                                                            <option value="">Sin horario</option>
+                                                            {% for departamento_nombre, horarios in horarios_por_departamento %}
+                                                                <optgroup label="{{ departamento_nombre }}">
+                                                                    {% for horario in horarios %}
+                                                                        <option value="{{ horario.id }}" {% if empleado.horario_id == horario.id %}selected{% endif %}>
+                                                                            {{ horario.nombre_turno }} ({{ horario.hora_entrada }} a {{ horario.hora_salida }})
+                                                                        </option>
+                                                                    {% endfor %}
+                                                                </optgroup>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <span class="form-note">Selecciona un solo horario para este empleado.</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between">
+                                                    <a href="{% url 'empleados' %}" class="btn btn-outline-light">Volver</a>
+                                                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

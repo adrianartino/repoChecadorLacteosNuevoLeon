@@ -1,0 +1,472 @@
+{% extends 'appChecador/menu/menu.html' %}
+{% load tz %}
+
+{% block tittle %}
+    <title>Asistencias del dia - LNL</title>
+{% endblock %}
+
+{% block content %}
+    <div class="components-preview wide-md mx-auto">
+        <div class="nk-block-head nk-block-head-lg wide-sm">
+            <div class="nk-block-head-content">
+                <h2 class="nk-block-title fw-normal">Asistencias del dia</h2>
+                <div class="nk-block-des mt-2">
+                    <p class="lead">Consulta operativa de entradas, salidas, retardos y horas extra por fecha administrativa.</p>
+                </div>
+                <div class="mt-3">
+                    <a href="#" class="btn btn-outline-primary mr-2 mb-2" data-toggle="modal" data-target="#modalExportarExcel">
+                        <em class="icon ni ni-file-xls"></em><span>Exportar Excel</span>
+                    </a>
+                    <a href="#" class="btn btn-primary mr-2 mb-2" data-toggle="modal" data-target="#modalExportarPdf">
+                        <em class="icon ni ni-file-pdf"></em><span>Exportar PDF</span>
+                    </a>
+                    <a href="#" class="btn btn-outline-dark mr-2 mb-2" data-toggle="modal" data-target="#modalExportarExcelImss">
+                        <em class="icon ni ni-file-xls"></em><span>Excel IMSS</span>
+                    </a>
+                    <a href="#" class="btn btn-dark mb-2" data-toggle="modal" data-target="#modalExportarPdfImss">
+                        <em class="icon ni ni-file-pdf"></em><span>PDF IMSS</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block">
+            <div class="row g-gs">
+                <div class="col-md-4">
+                    <div class="card card-bordered">
+                        <div class="card-inner">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="overline-title text-primary-alt">Jornadas</h6>
+                                    <h3 class="mb-0">{{ total_jornadas }}</h3>
+                                </div>
+                                <div class="user-avatar bg-primary">
+                                    <em class="icon ni ni-users"></em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-bordered">
+                        <div class="card-inner">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="overline-title text-warning">Retardos</h6>
+                                    <h3 class="mb-0">{{ total_retardos }}</h3>
+                                </div>
+                                <div class="user-avatar bg-warning">
+                                    <em class="icon ni ni-clock"></em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-bordered">
+                        <div class="card-inner">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="overline-title text-success">Con horas extra</h6>
+                                    <h3 class="mb-0">{{ total_con_extra }}</h3>
+                                </div>
+                                <div class="user-avatar bg-success">
+                                    <em class="icon ni ni-growth"></em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-bordered card-preview">
+                <div class="card-inner">
+                    <form method="get" class="row g-4 align-end">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label" for="fecha">Fecha administrativa</label>
+                                <div class="form-control-wrap">
+                                    <input type="date" class="form-control" id="fecha" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label" for="departamento">Departamento</label>
+                                <div class="form-control-wrap">
+                                    <select class="form-control" id="departamento" name="departamento">
+                                        <option value="">Todos</option>
+                                        {% for departamento in departamentos %}
+                                            <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-label" for="empleado">Empleado</label>
+                                <div class="form-control-wrap">
+                                    <select class="form-control" id="empleado" name="empleado">
+                                        <option value="">Todos</option>
+                                        {% for empleado in empleados %}
+                                            <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="form-label" for="horario">Horario</label>
+                                <div class="form-control-wrap">
+                                    <select class="form-control" id="horario" name="horario">
+                                        <option value="">Todos</option>
+                                        {% for horario in horarios %}
+                                            <option value="{{ horario.id }}" {% if filtros.horario == horario.id|stringformat:"s" %}selected{% endif %}>{{ horario.nombre_turno }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <em class="icon ni ni-filter"></em>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="nk-block nk-block-lg">
+            <div class="card card-preview">
+                <div class="card-inner">
+                    <table class="datatable-init nk-tb-list nk-tb-ulist" data-auto-responsive="false">
+                        <thead>
+                            <tr class="nk-tb-item nk-tb-head">
+                                <th class="nk-tb-col"><span class="sub-text">Empleado</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Departamento</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Horario</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Entrada</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Salida</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Retardo</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Horas extra</span></th>
+                                <th class="nk-tb-col tb-col-md"><span class="sub-text">Estado</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for jornada in jornadas %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col">
+                                        <div class="user-card">
+                                            <div class="user-avatar bg-dim-primary d-none d-sm-flex">
+                                                <span>{{ jornada.empleado.id_biometrico }}</span>
+                                            </div>
+                                            <div class="user-info">
+                                                <span class="tb-lead">{{ jornada.empleado.nombre }}</span>
+                                                <span class="tb-sub">Fecha: {{ jornada.fecha_administrativa|date:"Y-m-d" }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">
+                                            {% if jornada.empleado.departamento %}
+                                                {{ jornada.empleado.departamento.nombre }}
+                                            {% else %}
+                                                Sin departamento
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">
+                                            {% if jornada.horario %}
+                                                {{ jornada.horario.nombre_turno }}
+                                            {% else %}
+                                                Sin horario
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">
+                                            {% if jornada.entrada_real %}
+                                                {{ jornada.entrada_real|localtime|date:"Y-m-d h:i:s A" }}
+                                            {% else %}
+                                                Sin entrada
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">
+                                            {% if jornada.salida_real %}
+                                                {{ jornada.salida_real|localtime|date:"Y-m-d h:i:s A" }}
+                                            {% else %}
+                                                Sin salida
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        {% if jornada.retardo %}
+                                            <span class="badge badge-dot badge-warning">Si</span>
+                                        {% else %}
+                                            <span class="badge badge-dot badge-success">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        <span class="tb-amount">{{ jornada.horas_extra }}</span>
+                                        <span class="tb-sub d-block">{{ jornada.minutos_extra }} min</span>
+                                    </td>
+                                    <td class="nk-tb-col tb-col-md">
+                                        {% if jornada.entrada_real and jornada.salida_real %}
+                                            {% if jornada.horas_extra > 0 %}
+                                                <span class="badge badge-dim badge-success">Completa con extra</span>
+                                            {% elif jornada.retardo %}
+                                                <span class="badge badge-dim badge-warning">Completa con retardo</span>
+                                            {% else %}
+                                                <span class="badge badge-dim badge-primary">Completa</span>
+                                            {% endif %}
+                                        {% elif jornada.entrada_real and not jornada.salida_real %}
+                                            <span class="badge badge-dim badge-danger">Sin salida</span>
+                                        {% elif jornada.salida_real and not jornada.entrada_real %}
+                                            <span class="badge badge-dim badge-danger">Sin entrada</span>
+                                        {% else %}
+                                            <span class="badge badge-dim badge-secondary">Sin checadas</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr class="nk-tb-item">
+                                    <td class="nk-tb-col" colspan="8">
+                                        <span class="tb-sub">No hay asistencias para los filtros seleccionados.</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalExportarExcel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Exportar reporte a Excel</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="get" action="{% url 'exportar_asistencias_excel' %}">
+                        <div class="form-group">
+                            <label class="form-label" for="fecha_excel">Fecha administrativa</label>
+                            <input type="date" class="form-control" id="fecha_excel" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="departamento_excel">Departamento</label>
+                            <select class="form-control" id="departamento_excel" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="empleado_excel">Empleado</label>
+                            <select class="form-control" id="empleado_excel" name="empleado">
+                                <option value="">Todos</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="horario_excel">Horario</label>
+                            <select class="form-control" id="horario_excel" name="horario">
+                                <option value="">Todos</option>
+                                {% for horario in horarios %}
+                                    <option value="{{ horario.id }}" {% if filtros.horario == horario.id|stringformat:"s" %}selected{% endif %}>{{ horario.nombre_turno }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary">Generar Excel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalExportarPdf">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Exportar reporte a PDF</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="get" action="{% url 'exportar_asistencias_pdf' %}">
+                        <div class="form-group">
+                            <label class="form-label" for="fecha_pdf">Fecha administrativa</label>
+                            <input type="date" class="form-control" id="fecha_pdf" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="departamento_pdf">Departamento</label>
+                            <select class="form-control" id="departamento_pdf" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="empleado_pdf">Empleado</label>
+                            <select class="form-control" id="empleado_pdf" name="empleado">
+                                <option value="">Todos</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="horario_pdf">Horario</label>
+                            <select class="form-control" id="horario_pdf" name="horario">
+                                <option value="">Todos</option>
+                                {% for horario in horarios %}
+                                    <option value="{{ horario.id }}" {% if filtros.horario == horario.id|stringformat:"s" %}selected{% endif %}>{{ horario.nombre_turno }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary">Generar PDF</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalExportarExcelImss">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Exportar Excel IMSS</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="get" action="{% url 'exportar_asistencias_excel_imss' %}">
+                        <div class="form-group">
+                            <label class="form-label" for="fecha_excel_imss">Fecha administrativa</label>
+                            <input type="date" class="form-control" id="fecha_excel_imss" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="departamento_excel_imss">Departamento</label>
+                            <select class="form-control" id="departamento_excel_imss" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="empleado_excel_imss">Empleado</label>
+                            <select class="form-control" id="empleado_excel_imss" name="empleado">
+                                <option value="">Todos</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="horario_excel_imss">Horario</label>
+                            <select class="form-control" id="horario_excel_imss" name="horario">
+                                <option value="">Todos</option>
+                                {% for horario in horarios %}
+                                    <option value="{{ horario.id }}" {% if filtros.horario == horario.id|stringformat:"s" %}selected{% endif %}>{{ horario.nombre_turno }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-dark">Generar Excel IMSS</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="modalExportarPdfImss">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                    <em class="icon ni ni-cross"></em>
+                </a>
+                <div class="modal-header">
+                    <h5 class="modal-title">Exportar PDF IMSS</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="get" action="{% url 'exportar_asistencias_pdf_imss' %}">
+                        <div class="form-group">
+                            <label class="form-label" for="fecha_pdf_imss">Fecha administrativa</label>
+                            <input type="date" class="form-control" id="fecha_pdf_imss" name="fecha" value="{{ filtros.fecha|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="departamento_pdf_imss">Departamento</label>
+                            <select class="form-control" id="departamento_pdf_imss" name="departamento">
+                                <option value="">Todos</option>
+                                {% for departamento in departamentos %}
+                                    <option value="{{ departamento.id }}" {% if filtros.departamento == departamento.id|stringformat:"s" %}selected{% endif %}>{{ departamento.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="empleado_pdf_imss">Empleado</label>
+                            <select class="form-control" id="empleado_pdf_imss" name="empleado">
+                                <option value="">Todos</option>
+                                {% for empleado in empleados %}
+                                    <option value="{{ empleado.id }}" {% if filtros.empleado == empleado.id|stringformat:"s" %}selected{% endif %}>{{ empleado.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="horario_pdf_imss">Horario</label>
+                            <select class="form-control" id="horario_pdf_imss" name="horario">
+                                <option value="">Todos</option>
+                                {% for horario in horarios %}
+                                    <option value="{{ horario.id }}" {% if filtros.horario == horario.id|stringformat:"s" %}selected{% endif %}>{{ horario.nombre_turno }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-dark">Generar PDF IMSS</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                Swal.fire({
+                    title: '{% if message.tags == "success" %}Correcto!{% else %}Error!{% endif %}',
+                    text: '{{ message|escapejs }}',
+                    icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+                    confirmButtonText: 'Aceptar'
+                });
+            </script>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
