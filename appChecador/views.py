@@ -8,10 +8,10 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, letter
@@ -31,6 +31,27 @@ LOGO_REPORTE = os.path.join(
     'fondoLogin',
     'logoLacteos.jpeg',
 )
+
+
+def _dibujar_marco_pdf(canvas, doc):
+    canvas.saveState()
+    borde = 0.22 * inch
+    ancho, alto = doc.pagesize
+    canvas.setStrokeColor(colors.HexColor('#CBD5E1'))
+    canvas.setLineWidth(0.8)
+    canvas.roundRect(
+        borde,
+        borde,
+        ancho - (borde * 2),
+        alto - (borde * 2),
+        10,
+        stroke=1,
+        fill=0,
+    )
+    canvas.setFont('Helvetica', 8)
+    canvas.setFillColor(colors.HexColor('#64748B'))
+    canvas.drawRightString(ancho - borde, borde - 0.04 * inch, f'Pagina {canvas.getPageNumber()}')
+    canvas.restoreState()
 
 
 def _formatear_hora_local(dt):
@@ -105,8 +126,88 @@ def inicio(request):
         return redirect('login')
     
     nombreUsuarioLogueado = request.session['usuario_nombre']
-    
-    return render(request, 'appChecador/inicio/inicio.html', {'nombre_usuario': nombreUsuarioLogueado})
+    hoy = timezone.localdate()
+
+    jornadas_hoy = JornadaAsistencia.objects.filter(fecha_administrativa=hoy).select_related(
+        'empleado', 'empleado__departamento', 'horario'
+    )
+    registros_hoy = RegistroAsistencia.objects.filter(fecha_administrativa=hoy).select_related('empleado')
+
+    total_empleados = Empleado.objects.count()
+    empleados_activos = Empleado.objects.filter(activo=True).count()
+    empleados_sin_configurar = Empleado.objects.filter(
+        Q(departamento__isnull=True) | Q(horario__isnull=True)
+    ).count()
+
+    total_jornadas_hoy = jornadas_hoy.count()
+    jornadas_completas_hoy = jornadas_hoy.filter(salida_real__isnull=False).count()
+    jornadas_sin_salida_hoy = jornadas_hoy.filter(entrada_real__isnull=False, salida_real__isnull=True).count()
+    retardos_hoy = jornadas_hoy.filter(retardo=True).count()
+    horas_extra_hoy = jornadas_hoy.aggregate(total=Sum('horas_extra'))['total'] or 0
+    checadas_hoy = registros_hoy.count()
+    duplicadas_hoy = registros_hoy.filter(observaciones__icontains='Duplicada por ventana').count()
+
+    ultima_checada = registros_hoy.order_by('-fecha_hora_real').first() or RegistroAsistencia.objects.order_by('-fecha_hora_real').first()
+
+    resumen_departamentos = list(
+        jornadas_hoy.values('empleado__departamento__nombre')
+        .annotate(
+            asistencias=Count('id'),
+            retardos=Count('id', filter=Q(retardo=True)),
+            horas_extra=Sum('horas_extra'),
+        )
+        .order_by('-asistencias', 'empleado__departamento__nombre')[:8]
+    )
+
+    for item in resumen_departamentos:
+        item['departamento'] = item['empleado__departamento__nombre'] or 'Sin departamento'
+        item['horas_extra'] = item['horas_extra'] or 0
+
+    incidencias = []
+    for jornada in jornadas_hoy.filter(Q(salida_real__isnull=True) | Q(retardo=True)).order_by('empleado__nombre', 'entrada_real')[:8]:
+        if jornada.salida_real is None:
+            tipo = 'Sin salida'
+            detalle = 'La jornada sigue abierta.'
+        elif jornada.retardo:
+            tipo = 'Retardo'
+            detalle = f'{jornada.minutos_retardo} min de retardo.'
+        else:
+            tipo = 'Revision'
+            detalle = 'Incidencia operativa.'
+        incidencias.append({
+            'empleado': jornada.empleado.nombre,
+            'departamento': jornada.empleado.departamento.nombre if jornada.empleado.departamento else 'Sin departamento',
+            'tipo': tipo,
+            'detalle': detalle,
+            'fecha': jornada.fecha_administrativa,
+        })
+
+    actividad_reciente = list(
+        registros_hoy.order_by('-fecha_hora_real')[:8]
+    )
+
+    return render(
+        request,
+        'appChecador/inicio/inicio.html',
+        {
+            'nombre_usuario': nombreUsuarioLogueado,
+            'fecha_hoy': hoy,
+            'total_empleados': total_empleados,
+            'empleados_activos': empleados_activos,
+            'empleados_sin_configurar': empleados_sin_configurar,
+            'total_jornadas_hoy': total_jornadas_hoy,
+            'jornadas_completas_hoy': jornadas_completas_hoy,
+            'jornadas_sin_salida_hoy': jornadas_sin_salida_hoy,
+            'retardos_hoy': retardos_hoy,
+            'horas_extra_hoy': horas_extra_hoy,
+            'checadas_hoy': checadas_hoy,
+            'duplicadas_hoy': duplicadas_hoy,
+            'ultima_checada': ultima_checada,
+            'resumen_departamentos': resumen_departamentos,
+            'incidencias': incidencias,
+            'actividad_reciente': actividad_reciente,
+        }
+    )
 
 
 def _parsear_fecha(valor, predeterminada):
@@ -491,10 +592,10 @@ def _crear_pdf_reporte_jornadas(jornadas, filtros, nombre_reporte, prefijo_archi
     documento = SimpleDocTemplate(
         buffer,
         pagesize=landscape(letter),
-        leftMargin=0.45 * inch,
-        rightMargin=0.45 * inch,
-        topMargin=0.45 * inch,
-        bottomMargin=0.45 * inch,
+        leftMargin=0.50 * inch,
+        rightMargin=0.50 * inch,
+        topMargin=0.50 * inch,
+        bottomMargin=0.50 * inch,
     )
 
     estilos = getSampleStyleSheet()
@@ -524,7 +625,7 @@ def _crear_pdf_reporte_jornadas(jornadas, filtros, nombre_reporte, prefijo_archi
         encabezado.append(Spacer(1, 1.0 * inch))
 
     texto_encabezado = [
-        Paragraph('LACTEOS NUEVO LEON', titulo),
+        Paragraph('LACTEOS NUEVO LEON S.P.P DE R.L.', titulo),
         Paragraph(
             f'{nombre_reporte}{" - Formato IMSS" if modo_imss else ""}',
             ParagraphStyle(
@@ -543,7 +644,7 @@ def _crear_pdf_reporte_jornadas(jornadas, filtros, nombre_reporte, prefijo_archi
     ]
     encabezado.append(texto_encabezado)
 
-    tabla_encabezado = Table([encabezado], colWidths=[1.2 * inch, 8.7 * inch])
+    tabla_encabezado = Table([encabezado], colWidths=[1.1 * inch, 8.4 * inch])
     tabla_encabezado.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
@@ -581,7 +682,7 @@ def _crear_pdf_reporte_jornadas(jornadas, filtros, nombre_reporte, prefijo_archi
     tabla = Table(
         datos,
         repeatRows=1,
-        colWidths=[0.8 * inch, 2.0 * inch, 1.7 * inch, 1.8 * inch, 1.2 * inch, 1.2 * inch, 1.8 * inch, 0.7 * inch],
+        colWidths=[0.65 * inch, 1.60 * inch, 1.35 * inch, 1.45 * inch, 0.95 * inch, 0.95 * inch, 1.35 * inch, 0.55 * inch],
     )
     tabla.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#111827')),
@@ -598,7 +699,7 @@ def _crear_pdf_reporte_jornadas(jornadas, filtros, nombre_reporte, prefijo_archi
     ]))
     elementos.append(tabla)
 
-    documento.build(elementos)
+    documento.build(elementos, onFirstPage=_dibujar_marco_pdf, onLaterPages=_dibujar_marco_pdf)
     response.write(buffer.getvalue())
     buffer.close()
     return response
@@ -673,10 +774,10 @@ def _crear_pdf_resumen_semana(resumen, inicio_semana, fin_semana, prefijo_archiv
     documento = SimpleDocTemplate(
         buffer,
         pagesize=landscape(letter),
-        leftMargin=0.45 * inch,
-        rightMargin=0.45 * inch,
-        topMargin=0.45 * inch,
-        bottomMargin=0.45 * inch,
+        leftMargin=0.50 * inch,
+        rightMargin=0.50 * inch,
+        topMargin=0.50 * inch,
+        bottomMargin=0.50 * inch,
     )
 
     estilos = getSampleStyleSheet()
@@ -706,7 +807,7 @@ def _crear_pdf_resumen_semana(resumen, inicio_semana, fin_semana, prefijo_archiv
         encabezado.append(Spacer(1, 1.0 * inch))
 
     encabezado.append([
-        Paragraph('LACTEOS NUEVO LEON', titulo),
+        Paragraph('LACTEOS NUEVO LEON S.P.P DE R.L.', titulo),
         Paragraph(
             f"Semana operativa{' - Formato IMSS' if modo_imss else ''}",
             ParagraphStyle(
@@ -724,7 +825,7 @@ def _crear_pdf_resumen_semana(resumen, inicio_semana, fin_semana, prefijo_archiv
             subtitulo,
         ),
     ])
-    tabla_encabezado = Table([encabezado], colWidths=[1.2 * inch, 8.7 * inch])
+    tabla_encabezado = Table([encabezado], colWidths=[1.1 * inch, 8.4 * inch])
     tabla_encabezado.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
@@ -775,7 +876,7 @@ def _crear_pdf_resumen_semana(resumen, inicio_semana, fin_semana, prefijo_archiv
     ]))
     elementos.append(tabla)
 
-    documento.build(elementos)
+    documento.build(elementos, onFirstPage=_dibujar_marco_pdf, onLaterPages=_dibujar_marco_pdf)
     response.write(buffer.getvalue())
     buffer.close()
     return response
@@ -787,20 +888,25 @@ def _crear_excel_semana_operativa_detallada(dias_semana, filas_semana, inicio_se
     hoja.title = 'Semana operativa'
 
     hoja.merge_cells('A1:J1')
-    hoja['A1'] = 'LACTEOS NUEVO LEON'
+    hoja['A1'] = 'LACTEOS NUEVO LEON S.P.P DE R.L.'
     hoja['A1'].font = Font(bold=True, size=16, color='FFFFFF')
     hoja['A1'].fill = PatternFill('solid', fgColor='111827')
+    hoja['A1'].alignment = Alignment(horizontal='center', vertical='center')
 
     hoja.merge_cells('A2:J2')
     sufijo = ' | Formato IMSS' if modo_imss else ''
     hoja['A2'] = f"Semana operativa{sufijo} | {inicio_semana.isoformat()} al {fin_semana.isoformat()}"
     hoja['A2'].font = Font(bold=True, size=12)
+    hoja['A2'].alignment = Alignment(horizontal='center', vertical='center')
     hoja.merge_cells('A3:J3')
     hoja['A3'] = _texto_filtros_semana(filtros, inicio_semana, fin_semana)
     hoja['A3'].font = Font(size=10)
+    hoja['A3'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
 
     encabezados = ['Num', 'Nombre']
-    encabezados.extend([dia['abreviatura'] for dia in dias_semana])
+    encabezados.extend([
+        f"{dia['abreviatura']}\n{dia['fecha'].strftime('%d/%m/%Y')}" for dia in dias_semana
+    ])
     encabezados.append('Resumen')
 
     hoja.append(encabezados)
@@ -808,6 +914,9 @@ def _crear_excel_semana_operativa_detallada(dias_semana, filas_semana, inicio_se
     for celda in hoja[4]:
         celda.font = Font(bold=True, color='FFFFFF')
         celda.fill = PatternFill('solid', fgColor='1D4ED8')
+        celda.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+
+    hoja.row_dimensions[4].height = 32
 
     for fila in filas_semana:
         valores = [fila['id_biometrico'], fila['empleado']]
@@ -823,6 +932,10 @@ def _crear_excel_semana_operativa_detallada(dias_semana, filas_semana, inicio_se
                 valores.append(f'{entrada}/{salida}{extra}')
         valores.append(f"Dias: {fila['dias_trabajados']} | HE: {fila['horas_extra_semana']}")
         hoja.append(valores)
+
+    for fila in hoja.iter_rows(min_row=5, max_row=hoja.max_row):
+        for celda in fila:
+            celda.alignment = Alignment(vertical='center', wrap_text=True)
 
     for indice_columna, columna in enumerate(hoja.iter_cols(min_row=4, max_row=hoja.max_row), start=1):
         max_len = 0
@@ -850,10 +963,10 @@ def _crear_pdf_semana_operativa_detallada(dias_semana, filas_semana, inicio_sema
     documento = SimpleDocTemplate(
         buffer,
         pagesize=landscape(letter),
-        leftMargin=0.30 * inch,
-        rightMargin=0.30 * inch,
-        topMargin=0.35 * inch,
-        bottomMargin=0.35 * inch,
+        leftMargin=0.45 * inch,
+        rightMargin=0.45 * inch,
+        topMargin=0.45 * inch,
+        bottomMargin=0.45 * inch,
     )
 
     estilos = getSampleStyleSheet()
@@ -883,7 +996,7 @@ def _crear_pdf_semana_operativa_detallada(dias_semana, filas_semana, inicio_sema
         encabezado.append(Spacer(1, 0.9 * inch))
 
     encabezado.append([
-        Paragraph('LACTEOS NUEVO LEON', titulo),
+        Paragraph('LACTEOS NUEVO LEON S.P.P DE R.L.', titulo),
         Paragraph(f'Semana Operativa{" - Formato IMSS" if modo_imss else ""}', ParagraphStyle(
             'NombreReporteSemanaDetallada',
             parent=estilos['Heading2'],
@@ -900,7 +1013,7 @@ def _crear_pdf_semana_operativa_detallada(dias_semana, filas_semana, inicio_sema
         ),
     ])
 
-    tabla_encabezado = Table([encabezado], colWidths=[1.0 * inch, 9.2 * inch])
+    tabla_encabezado = Table([encabezado], colWidths=[1.0 * inch, 8.5 * inch])
     tabla_encabezado.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
@@ -931,7 +1044,7 @@ def _crear_pdf_semana_operativa_detallada(dias_semana, filas_semana, inicio_sema
         renglon.append(f'Dias: {fila["dias_trabajados"]}\nHE: {fila["horas_extra_semana"]}')
         datos.append(renglon)
 
-    col_widths = [0.55 * inch, 1.9 * inch] + [0.9 * inch] * len(dias_semana) + [1.2 * inch]
+    col_widths = [0.55 * inch, 1.55 * inch] + [0.82 * inch] * len(dias_semana) + [1.05 * inch]
     tabla = Table(datos, repeatRows=1, colWidths=col_widths)
     tabla.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#111827')),
@@ -948,7 +1061,7 @@ def _crear_pdf_semana_operativa_detallada(dias_semana, filas_semana, inicio_sema
     ]))
     elementos.append(tabla)
 
-    documento.build(elementos)
+    documento.build(elementos, onFirstPage=_dibujar_marco_pdf, onLaterPages=_dibujar_marco_pdf)
     response.write(buffer.getvalue())
     buffer.close()
     return response
@@ -1526,7 +1639,7 @@ def horarios(request):
         usa_corte_madrugada = request.POST.get('usa_corte_madrugada') == 'on'
         tolerancia_entrada = request.POST.get('tolerancia_entrada') or 15
         inicio_entrada = request.POST.get('inicio_entrada') or None
-        minimo_minutos_para_contar_extra = request.POST.get('minimo_minutos_para_contar_extra') or 30
+        minimo_minutos_para_contar_extra = request.POST.get('minimo_minutos_para_contar_extra') or 59
 
         if nombre_turno and hora_entrada and hora_salida:
             Horario.objects.create(
@@ -1574,7 +1687,7 @@ def editar_horario(request, horario_id):
         horario.usa_corte_madrugada = request.POST.get('usa_corte_madrugada') == 'on'
         horario.tolerancia_entrada = request.POST.get('tolerancia_entrada') or 15
         horario.inicio_entrada = request.POST.get('inicio_entrada') or None
-        horario.minimo_minutos_para_contar_extra = request.POST.get('minimo_minutos_para_contar_extra') or 30
+        horario.minimo_minutos_para_contar_extra = request.POST.get('minimo_minutos_para_contar_extra') or 59
         horario.save()
         messages.success(request, 'Horario actualizado')
         return redirect('editar_horario', horario_id=horario.id)

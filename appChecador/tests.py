@@ -23,6 +23,7 @@ class RegistroAsistenciaTests(TestCase):
             hora_entrada=datetime.fromisoformat('2026-04-16T21:45:00-06:00').time(),
             hora_salida=datetime.fromisoformat('2026-04-17T05:45:00-06:00').time(),
             usa_corte_madrugada=True,
+            minimo_minutos_para_contar_extra=59,
         )
         self.empleado.horario = self.horario_nocturno
         self.empleado.save()
@@ -104,3 +105,30 @@ class RegistroAsistenciaTests(TestCase):
 
         self.assertEqual(jornada.entrada_real.astimezone(self.tz).isoformat(), '2026-04-17T21:00:00-06:00')
         self.assertEqual(jornada.salida_real.astimezone(self.tz).isoformat(), '2026-04-18T05:40:00-06:00')
+
+    def test_horas_extra_empiezan_a_contar_despues_de_59_minutos(self):
+        RegistroAsistencia.objects.create(
+            empleado=self.empleado,
+            fecha_hora_real=datetime.fromisoformat('2026-04-17T21:45:00-06:00'),
+            fecha_administrativa=date(2026, 4, 17),
+            tipo='IN',
+            hikvision_event_id='qa-8',
+        )
+        RegistroAsistencia.objects.create(
+            empleado=self.empleado,
+            fecha_hora_real=datetime.fromisoformat('2026-04-18T07:43:00-06:00'),
+            fecha_administrativa=date(2026, 4, 18),
+            tipo='OUT',
+            hikvision_event_id='qa-9',
+        )
+
+        jornadas = reprocesar_jornadas_empleado(self.empleado)
+        jornada = jornadas[0]
+        self.assertEqual(jornada.minutos_extra, 118)
+        self.assertEqual(jornada.horas_extra, 1)
+
+        jornada.salida_real = datetime.fromisoformat('2026-04-18T07:55:00-06:00')
+        from appChecador.attendance_engine import _calcular_metricas
+        _calcular_metricas(jornada)
+        self.assertEqual(jornada.minutos_extra, 130)
+        self.assertEqual(jornada.horas_extra, 2)

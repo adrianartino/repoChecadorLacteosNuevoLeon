@@ -41,7 +41,7 @@ class Horario(models.Model):
     tolerancia_entrada = models.IntegerField(default=15, help_text="Minutos de tolerancia para entrada")
     inicio_entrada = models.TimeField(null=True, blank=True, help_text="Hora desde la cual se puede empezar a checar entrada")
     minimo_minutos_para_contar_extra = models.IntegerField(
-        default=30,
+        default=59,
         help_text="Minutos minimos despues de la salida para que empiece a contar la primera hora extra.",
     )
     

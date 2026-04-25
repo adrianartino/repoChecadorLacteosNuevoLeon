@@ -1,0 +1,7 @@
+Django==6.0.3
+openpyxl
+reportlab
+requests
+PyMySQL
+waitress
+Pillow

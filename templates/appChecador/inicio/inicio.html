@@ -1,403 +1,420 @@
 {% extends 'appChecador/menu/menu.html' %}
 
 {% block tittle %}
-
     <title>Inicio - LNL</title>
 {% endblock %}
 
 {% block content %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        .lnl-hero-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 55%, #f8fafc 100%);
+            border: 1px solid #dbeafe;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+            border-radius: 18px;
+        }
+        .lnl-stat-card {
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform .18s ease, box-shadow .18s ease;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+        }
+        .lnl-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+        }
+        .lnl-stat-accent {
+            height: 4px;
+            width: 100%;
+        }
+        .lnl-accent-primary { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+        .lnl-accent-warning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .lnl-accent-danger { background: linear-gradient(90deg, #dc2626, #fb7185); }
+        .lnl-accent-success { background: linear-gradient(90deg, #16a34a, #4ade80); }
+        .lnl-accent-info { background: linear-gradient(90deg, #0891b2, #38bdf8); }
+        .lnl-shortcut {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #1f2937;
+            transition: all .18s ease;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+        }
+        .lnl-shortcut:hover {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.10);
+        }
+        .lnl-shortcut-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ff;
+            color: #2563eb;
+            font-size: 1.2rem;
+        }
+        .lnl-section-card {
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+        }
+        .lnl-muted {
+            color: #64748b;
+        }
+    </style>
     <div class="nk-block-head nk-block-head-sm">
-        <div class="nk-block-between">
+        <div class="nk-block-between align-start">
             <div class="nk-block-head-content">
                 <h3 class="nk-block-title page-title">Dashboard Checador</h3>
                 <div class="nk-block-des text-soft">
-                    <p>Panel principal para sincronizar y revisar la informacion del checador.</p>
+                    <p>Vista operativa del dia {{ fecha_hoy|date:"d/m/Y" }} para asistencias, incidencias y sincronizacion.</p>
                 </div>
-            </div><!-- .nk-block-head-content -->
-        </div><!-- .nk-block-between -->
-    </div><!-- .nk-block-head -->
+            </div>
+            <div class="nk-block-head-content animate__animated animate__fadeIn animate__faster">
+                <div class="card lnl-hero-card" style="min-width: 280px;">
+                    <div class="card-inner py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="overline-title text-primary mb-1">Ultima checada sincronizada</div>
+                                <div class="h6 mb-0">
+                                    {% if ultima_checada %}
+                                        {{ ultima_checada.fecha_hora_real|date:"d/m/Y h:i A" }}
+                                    {% else %}
+                                        Sin datos
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <em class="icon ni ni-clock text-primary" style="font-size: 1.8rem;"></em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="nk-block">
         <div class="row g-gs">
-            <div class="col-lg-8">
-                <div class="card card-bordered h-100">
+            <div class="col-12">
+                <div class="row g-3 mb-1 animate__animated animate__fadeInUp animate__faster">
+                    <div class="col-md-6 col-xl-3">
+                        <a href="{% url 'asistencias_hoy' %}" class="lnl-shortcut">
+                            <div class="d-flex align-items-center">
+                                <div class="lnl-shortcut-icon"><em class="icon ni ni-calendar-booking"></em></div>
+                                <div class="ml-3">
+                                    <div class="fw-bold">Asistencias del dia</div>
+                                    <div class="small lnl-muted">Entradas, salidas y estatus</div>
+                                </div>
+                            </div>
+                            <em class="icon ni ni-arrow-right"></em>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <a href="{% url 'retardos' %}" class="lnl-shortcut">
+                            <div class="d-flex align-items-center">
+                                <div class="lnl-shortcut-icon"><em class="icon ni ni-time"></em></div>
+                                <div class="ml-3">
+                                    <div class="fw-bold">Retardos</div>
+                                    <div class="small lnl-muted">Llegadas fuera de tolerancia</div>
+                                </div>
+                            </div>
+                            <em class="icon ni ni-arrow-right"></em>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <a href="{% url 'horas_extra' %}" class="lnl-shortcut">
+                            <div class="d-flex align-items-center">
+                                <div class="lnl-shortcut-icon"><em class="icon ni ni-growth"></em></div>
+                                <div class="ml-3">
+                                    <div class="fw-bold">Horas extra</div>
+                                    <div class="small lnl-muted">Revision y acumulado diario</div>
+                                </div>
+                            </div>
+                            <em class="icon ni ni-arrow-right"></em>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <a href="{% url 'semana_operativa' %}" class="lnl-shortcut">
+                            <div class="d-flex align-items-center">
+                                <div class="lnl-shortcut-icon"><em class="icon ni ni-reports"></em></div>
+                                <div class="ml-3">
+                                    <div class="fw-bold">Semana operativa</div>
+                                    <div class="small lnl-muted">Resumen jueves a miercoles</div>
+                                </div>
+                            </div>
+                            <em class="icon ni ni-arrow-right"></em>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-primary"></div>
                     <div class="card-inner">
-                        <div class="card-title-group align-start mb-3">
-                            <div class="card-title">
-                                <h6 class="title">Orders Overview</h6>
-                                <p>In last 10 days buy and sells overview. <a href="#" class="link link-sm">Detailed Stats</a></p>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Asistencias hoy</div>
+                                <h3 class="mb-0">{{ total_jornadas_hoy }}</h3>
                             </div>
-                            <div class="card-tools mt-n1 mr-n1">
-                                <div class="drodown">
-                                    <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
-                                    <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
-                                        <ul class="link-list-opt no-bdr">
-                                            <li><a href="#" class="active"><span>15 Days</span></a></li>
-                                            <li><a href="#"><span>30 Days</span></a></li>
-                                            <li><a href="#"><span>3 Months</span></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!-- .card-title-group -->
-                        <div class="nk-order-ovwg">
-                            <div class="row g-4 align-end">
-                                <div class="col-xxl-8">
-                                    <div class="nk-order-ovwg-ck">
-                                        <canvas class="order-overview-chart" id="orderOverview"></canvas>
-                                    </div>
-                                </div><!-- .col -->
-                                <div class="col-xxl-4">
-                                    <div class="row g-4">
-                                        <div class="col-sm-6 col-xxl-12">
-                                            <div class="nk-order-ovwg-data buy">
-                                                <div class="amount">12,954.63 <small class="currenct currency-usd">USD</small></div>
-                                                <div class="info">Last month <strong>39,485 <span class="currenct currency-usd">USD</span></strong></div>
-                                                <div class="title"><em class="icon ni ni-arrow-down-left"></em> Buy Orders</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6 col-xxl-12">
-                                            <div class="nk-order-ovwg-data sell">
-                                                <div class="amount">12,954.63 <small class="currenct currency-usd">USD</small></div>
-                                                <div class="info">Last month <strong>39,485 <span class="currenct currency-usd">USD</span></strong></div>
-                                                <div class="title"><em class="icon ni ni-arrow-up-left"></em> Sell Orders</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div><!-- .col -->
-                            </div>
-                        </div><!-- .nk-order-ovwg -->
-                    </div><!-- .card-inner -->
-                </div><!-- .card -->
-            </div><!-- .col -->
-            <div class="col-lg-4">
-                <div class="card card-bordered h-100">
-                    <div class="card-inner-group">
-                        <div class="card-inner card-inner-md">
-                            <div class="card-title-group">
-                                <div class="card-title">
-                                    <h6 class="title">Action Center</h6>
-                                </div>
-                                <div class="card-tools mr-n1">
-                                    <div class="drodown">
-                                        <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
-                                        <div class="dropdown-menu dropdown-menu-right">
-                                            <ul class="link-list-opt no-bdr">
-                                                <li><a href="#"><em class="icon ni ni-setting"></em><span>Action Settings</span></a></li>
-                                                <li><a href="#"><em class="icon ni ni-notify"></em><span>Push Notification</span></a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!-- .card-inner -->
-                        <div class="card-inner">
-                            <div class="nk-wg-action">
-                                <div class="nk-wg-action-content">
-                                    <em class="icon ni ni-cc-alt-fill"></em>
-                                    <div class="title">Pending Buy/Sell Orders</div>
-                                    <p>We have still <strong>40 buy orders</strong> and <strong>12 sell orders</strong>, thats need to review.</p>
-                                </div>
-                                <a href="#" class="btn btn-icon btn-trigger mr-n2"><em class="icon ni ni-forward-ios"></em></a>
-                            </div>
-                        </div><!-- .card-inner -->
-                        <div class="card-inner">
-                            <div class="nk-wg-action">
-                                <div class="nk-wg-action-content">
-                                    <em class="icon ni ni-help-fill"></em>
-                                    <div class="title">Support Messages</div>
-                                    <p>Here is <strong>18 new</strong> support message. </p>
-                                </div>
-                                <a href="#" class="btn btn-icon btn-trigger mr-n2"><em class="icon ni ni-forward-ios"></em></a>
-                            </div>
-                        </div><!-- .card-inner -->
-                        <div class="card-inner">
-                            <div class="nk-wg-action">
-                                <div class="nk-wg-action-content">
-                                    <em class="icon ni ni-wallet-fill"></em>
-                                    <div class="title">Upcoming Deposit</div>
-                                    <p><strong>7 upcoming</strong> deposit need to review.</p>
-                                </div>
-                                <a href="#" class="btn btn-icon btn-trigger mr-n2"><em class="icon ni ni-forward-ios"></em></a>
-                            </div>
-                        </div><!-- .card-inner -->
-                    </div><!-- .card-inner-group -->
-                </div><!-- .card -->
-            </div><!-- .col -->
-            <div class="col-xl-7 col-xxl-8">
-                <div class="card card-bordered card-full">
+                            <em class="icon ni ni-calendar-booking text-primary" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Completas: {{ jornadas_completas_hoy }} | Checadas: {{ checadas_hoy }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-warning"></div>
                     <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Sin salida</div>
+                                <h3 class="mb-0 text-warning">{{ jornadas_sin_salida_hoy }}</h3>
+                            </div>
+                            <em class="icon ni ni-alert-circle text-warning" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Jornadas abiertas que requieren revision.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-danger"></div>
+                    <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Retardos hoy</div>
+                                <h3 class="mb-0 text-danger">{{ retardos_hoy }}</h3>
+                            </div>
+                            <em class="icon ni ni-time text-danger" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Detectados con base en horario y tolerancia.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-success"></div>
+                    <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Horas extra hoy</div>
+                                <h3 class="mb-0 text-success">{{ horas_extra_hoy }}</h3>
+                            </div>
+                            <em class="icon ni ni-growth text-success" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Total administrativo acumulado del dia.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-info"></div>
+                    <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Empleados</div>
+                                <h3 class="mb-0">{{ total_empleados }}</h3>
+                            </div>
+                            <em class="icon ni ni-users text-info" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Activos: {{ empleados_activos }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-info"></div>
+                    <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Sin configurar</div>
+                                <h3 class="mb-0 text-info">{{ empleados_sin_configurar }}</h3>
+                            </div>
+                            <em class="icon ni ni-setting-alt text-info" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Sin departamento o sin horario asignado.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-primary"></div>
+                    <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Duplicadas ignoradas</div>
+                                <h3 class="mb-0">{{ duplicadas_hoy }}</h3>
+                            </div>
+                            <em class="icon ni ni-repeat text-primary" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Checadas dentro de la ventana global de 5 minutos.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card card-bordered lnl-stat-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="lnl-stat-accent lnl-accent-warning"></div>
+                    <div class="card-inner">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="overline-title text-soft">Panel del dia</div>
+                                <h3 class="mb-0">{{ fecha_hoy|date:"d/m" }}</h3>
+                            </div>
+                            <em class="icon ni ni-sun-fill text-warning" style="font-size: 1.8rem;"></em>
+                        </div>
+                        <div class="text-soft small">Corte operativo del dia administrativo actual.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-5">
+                <div class="card card-bordered lnl-section-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="card-inner border-bottom">
                         <div class="card-title-group">
                             <div class="card-title">
-                                <h6 class="title"><span class="mr-2">Orders Activities</span> <a href="#" class="link d-none d-sm-inline">See History</a></h6>
-                            </div>
-                            <div class="card-tools">
-                                <ul class="card-tools-nav">
-                                    <li><a href="#"><span>Buy</span></a></li>
-                                    <li><a href="#"><span>Sell</span></a></li>
-                                    <li class="active"><a href="#"><span>All</span></a></li>
-                                </ul>
+                                <h6 class="title">Incidencias de hoy</h6>
+                                <p>Retardos y jornadas abiertas que requieren seguimiento.</p>
                             </div>
                         </div>
-                    </div><!-- .card-inner -->
-                    <div class="card-inner p-0 border-top">
+                    </div>
+                    <div class="card-inner p-0">
+                        <div class="nk-tb-list nk-tb-ulist">
+                            <div class="nk-tb-item nk-tb-head">
+                                <div class="nk-tb-col"><span class="sub-text">Empleado</span></div>
+                                <div class="nk-tb-col tb-col-md"><span class="sub-text">Departamento</span></div>
+                                <div class="nk-tb-col tb-col-md"><span class="sub-text">Tipo</span></div>
+                                <div class="nk-tb-col"><span class="sub-text">Detalle</span></div>
+                            </div>
+                            {% for item in incidencias %}
+                                <div class="nk-tb-item">
+                                    <div class="nk-tb-col">
+                                        <span class="tb-lead">{{ item.empleado }}</span>
+                                    </div>
+                                    <div class="nk-tb-col tb-col-md">
+                                        <span class="tb-sub">{{ item.departamento }}</span>
+                                    </div>
+                                    <div class="nk-tb-col tb-col-md">
+                                        <span class="badge badge-dot {% if item.tipo == 'Retardo' %}badge-danger{% else %}badge-warning{% endif %}">{{ item.tipo }}</span>
+                                    </div>
+                                    <div class="nk-tb-col">
+                                        <span class="tb-sub">{{ item.detalle }}</span>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="nk-tb-item">
+                                    <div class="nk-tb-col">
+                                        <span class="tb-sub">No hay incidencias registradas hoy.</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-7">
+                <div class="card card-bordered lnl-section-card h-100 animate__animated animate__fadeInUp animate__faster">
+                    <div class="card-inner border-bottom">
+                        <div class="card-title-group">
+                            <div class="card-title">
+                                <h6 class="title">Actividad reciente</h6>
+                                <p>Ultimas checadas recibidas para el dia administrativo actual.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner p-0">
                         <div class="nk-tb-list nk-tb-orders">
                             <div class="nk-tb-item nk-tb-head">
-                                <div class="nk-tb-col nk-tb-orders-type"><span>Type</span></div>
-                                <div class="nk-tb-col"><span>Desc</span></div>
-                                <div class="nk-tb-col tb-col-sm"><span>Date</span></div>
-                                <div class="nk-tb-col tb-col-xxl"><span>Time</span></div>
-                                <div class="nk-tb-col tb-col-xxl"><span>Ref</span></div>
-                                <div class="nk-tb-col tb-col-sm text-right"><span>USD Amount</span></div>
-                                <div class="nk-tb-col text-right"><span>Amount</span></div>
-                            </div><!-- .nk-tb-item -->
-                            <div class="nk-tb-item">
-                                <div class="nk-tb-col nk-tb-orders-type">
-                                    <ul class="icon-overlap">
-                                        <li><em class="bg-btc-dim icon-circle icon ni ni-sign-btc"></em></li>
-                                        <li><em class="bg-success-dim icon-circle icon ni ni-arrow-down-left"></em></li>
-                                    </ul>
+                                <div class="nk-tb-col"><span class="sub-text">Empleado</span></div>
+                                <div class="nk-tb-col tb-col-md"><span class="sub-text">Tipo</span></div>
+                                <div class="nk-tb-col"><span class="sub-text">Hora</span></div>
+                                <div class="nk-tb-col tb-col-lg"><span class="sub-text">Observacion</span></div>
+                            </div>
+                            {% for registro in actividad_reciente %}
+                                <div class="nk-tb-item">
+                                    <div class="nk-tb-col">
+                                        <span class="tb-lead">{{ registro.empleado.nombre }}</span>
+                                    </div>
+                                    <div class="nk-tb-col tb-col-md">
+                                        <span class="badge badge-dot {% if registro.tipo == 'IN' %}badge-success{% else %}badge-primary{% endif %}">
+                                            {{ registro.get_tipo_display }}
+                                        </span>
+                                    </div>
+                                    <div class="nk-tb-col">
+                                        <span class="tb-sub">{{ registro.fecha_hora_real|date:"d/m/Y h:i A" }}</span>
+                                    </div>
+                                    <div class="nk-tb-col tb-col-lg">
+                                        <span class="tb-sub">{{ registro.observaciones|default:"Sin observaciones" }}</span>
+                                    </div>
                                 </div>
-                                <div class="nk-tb-col">
-                                    <span class="tb-lead">Buy Bitcoin</span>
+                            {% empty %}
+                                <div class="nk-tb-item">
+                                    <div class="nk-tb-col">
+                                        <span class="tb-sub">No hay checadas registradas hoy.</span>
+                                    </div>
                                 </div>
-                                <div class="nk-tb-col tb-col-sm">
-                                    <span class="tb-sub">02/10/2020</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub">11:37 PM</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub text-primary">RE2309232</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm text-right">
-                                    <span class="tb-sub tb-amount">4,565.75 <span>USD</span></span>
-                                </div>
-                                <div class="nk-tb-col text-right">
-                                    <span class="tb-sub tb-amount ">+ 0.2040 <span>BTC</span></span>
-                                </div>
-                            </div><!-- .nk-tb-item -->
-                            <div class="nk-tb-item">
-                                <div class="nk-tb-col nk-tb-orders-type">
-                                    <ul class="icon-overlap">
-                                        <li><em class="bg-eth-dim icon-circle icon ni ni-sign-eth"></em></li>
-                                        <li><em class="bg-success-dim icon-circle icon ni ni-arrow-down-left"></em></li>
-                                    </ul>
-                                </div>
-                                <div class="nk-tb-col">
-                                    <span class="tb-lead">Buy Ethereum</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm">
-                                    <span class="tb-sub">02/10/2020</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub">10:37 PM</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub text-primary">RE2309232</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm text-right">
-                                    <span class="tb-sub tb-amount">2,039.39 <span>USD</span></span>
-                                </div>
-                                <div class="nk-tb-col text-right">
-                                    <span class="tb-sub tb-amount ">+ 0.12600 <span>BTC</span></span>
-                                </div>
-                            </div><!-- .nk-tb-item -->
-                            <div class="nk-tb-item">
-                                <div class="nk-tb-col nk-tb-orders-type">
-                                    <ul class="icon-overlap">
-                                        <li><em class="bg-btc-dim icon-circle icon ni ni-sign-btc"></em></li>
-                                        <li><em class="bg-purple-dim icon-circle icon ni ni-arrow-up-right"></em></li>
-                                    </ul>
-                                </div>
-                                <div class="nk-tb-col">
-                                    <span class="tb-lead">Sell Bitcoin</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm">
-                                    <span class="tb-sub">02/10/2020</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub">10:45 PM</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub text-primary">RE2309232</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm text-right">
-                                    <span class="tb-sub tb-amount">9,285.71 <span>USD</span></span>
-                                </div>
-                                <div class="nk-tb-col text-right">
-                                    <span class="tb-sub tb-amount ">+ 0.94750 <span>BTC</span></span>
-                                </div>
-                            </div><!-- .nk-tb-item -->
-                            <div class="nk-tb-item">
-                                <div class="nk-tb-col nk-tb-orders-type">
-                                    <ul class="icon-overlap">
-                                        <li><em class="bg-eth-dim icon-circle icon ni ni-sign-eth"></em></li>
-                                        <li><em class="bg-purple-dim icon-circle icon ni ni-arrow-up-right"></em></li>
-                                    </ul>
-                                </div>
-                                <div class="nk-tb-col">
-                                    <span class="tb-lead">Sell Etherum</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm">
-                                    <span class="tb-sub">02/11/2020</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub">10:25 PM</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub text-primary">RE2309232</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm text-right">
-                                    <span class="tb-sub tb-amount">12,596.75 <span>USD</span></span>
-                                </div>
-                                <div class="nk-tb-col text-right">
-                                    <span class="tb-sub tb-amount ">+ 1.02050 <span>BTC</span></span>
-                                </div>
-                            </div><!-- .nk-tb-item -->
-                            <div class="nk-tb-item">
-                                <div class="nk-tb-col nk-tb-orders-type">
-                                    <ul class="icon-overlap">
-                                        <li><em class="bg-btc-dim icon-circle icon ni ni-sign-btc"></em></li>
-                                        <li><em class="bg-success-dim icon-circle icon ni ni-arrow-down-left"></em></li>
-                                    </ul>
-                                </div>
-                                <div class="nk-tb-col">
-                                    <span class="tb-lead">Buy Bitcoin</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm">
-                                    <span class="tb-sub">02/10/2020</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub">10:12 PM</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub text-primary">RE2309232</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm text-right">
-                                    <span class="tb-sub tb-amount">400.00 <span>USD</span></span>
-                                </div>
-                                <div class="nk-tb-col text-right">
-                                    <span class="tb-sub tb-amount ">+ 0.00056 <span>BTC</span></span>
-                                </div>
-                            </div><!-- .nk-tb-item -->
-                            <div class="nk-tb-item">
-                                <div class="nk-tb-col nk-tb-orders-type">
-                                    <ul class="icon-overlap">
-                                        <li><em class="bg-eth-dim icon-circle icon ni ni-sign-eth"></em></li>
-                                        <li><em class="bg-purple-dim icon-circle icon ni ni-arrow-up-right"></em></li>
-                                    </ul>
-                                </div>
-                                <div class="nk-tb-col">
-                                    <span class="tb-lead">Sell Etherum</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm">
-                                    <span class="tb-sub">02/09/2020</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub">05:15 PM</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-xxl">
-                                    <span class="tb-sub text-primary">RE2309232</span>
-                                </div>
-                                <div class="nk-tb-col tb-col-sm text-right">
-                                    <span class="tb-sub tb-amount">6,246.50 <span>USD</span></span>
-                                </div>
-                                <div class="nk-tb-col text-right">
-                                    <span class="tb-sub tb-amount ">+ 0.02575 <span>BTC</span></span>
-                                </div>
-                            </div><!-- .nk-tb-item -->
+                            {% endfor %}
                         </div>
-                    </div><!-- .card-inner -->
-                    <div class="card-inner-sm border-top text-center d-sm-none">
-                        <a href="#" class="btn btn-link btn-block">See History</a>
-                    </div><!-- .card-inner -->
-                </div><!-- .card -->
-            </div><!-- .col -->
-            <div class="col-xl-5 col-xxl-4">
-                <div class="row g-gs">
-                    <div class="col-md-6 col-lg-12">
-                        <div class="card card-bordered card-full">
-                            <div class="card-inner">
-                                <div class="card-title-group align-start mb-2">
-                                    <div class="card-title">
-                                        <h6 class="title">Top Coin in Orders</h6>
-                                        <p>In last 15 days buy and sells overview.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card card-bordered lnl-section-card animate__animated animate__fadeInUp animate__faster">
+                    <div class="card-inner border-bottom">
+                        <div class="card-title-group">
+                            <div class="card-title">
+                                <h6 class="title">Resumen por departamento</h6>
+                                <p>Comportamiento del dia por departamento: asistencias, retardos y horas extra.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner p-0">
+                        <div class="nk-tb-list nk-tb-ulist">
+                            <div class="nk-tb-item nk-tb-head">
+                                <div class="nk-tb-col"><span class="sub-text">Departamento</span></div>
+                                <div class="nk-tb-col tb-col-md text-center"><span class="sub-text">Asistencias</span></div>
+                                <div class="nk-tb-col tb-col-md text-center"><span class="sub-text">Retardos</span></div>
+                                <div class="nk-tb-col tb-col-md text-center"><span class="sub-text">Horas extra</span></div>
+                            </div>
+                            {% for item in resumen_departamentos %}
+                                <div class="nk-tb-item">
+                                    <div class="nk-tb-col">
+                                        <span class="tb-lead">{{ item.departamento }}</span>
                                     </div>
-                                    <div class="card-tools mt-n1 mr-n1">
-                                        <div class="drodown">
-                                            <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
-                                            <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
-                                                <ul class="link-list-opt no-bdr">
-                                                    <li><a href="#" class="active"><span>15 Days</span></a></li>
-                                                    <li><a href="#"><span>30 Days</span></a></li>
-                                                    <li><a href="#"><span>3 Months</span></a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                                    <div class="nk-tb-col tb-col-md text-center">
+                                        <span class="tb-amount">{{ item.asistencias }}</span>
                                     </div>
-                                </div><!-- .card-title-group -->
-                                <div class="nk-coin-ovwg">
-                                    <div class="nk-coin-ovwg-ck">
-                                        <canvas class="coin-overview-chart" id="coinOverview"></canvas>
+                                    <div class="nk-tb-col tb-col-md text-center">
+                                        <span class="tb-amount">{{ item.retardos }}</span>
                                     </div>
-                                    <ul class="nk-coin-ovwg-legends">
-                                        <li><span class="dot dot-lg sq" data-bg="#f98c45"></span><span>Bitcoin</span></li>
-                                        <li><span class="dot dot-lg sq" data-bg="#9cabff"></span><span>Ethereum</span></li>
-                                        <li><span class="dot dot-lg sq" data-bg="#8feac5"></span><span>NioCoin</span></li>
-                                        <li><span class="dot dot-lg sq" data-bg="#6b79c8"></span><span>Litecoin</span></li>
-                                        <li><span class="dot dot-lg sq" data-bg="#79f1dc"></span><span>Bitcoin Cash</span></li>
-                                    </ul>
-                                </div><!-- .nk-coin-ovwg -->
-                            </div><!-- .card-inner -->
-                        </div><!-- .card -->
-                    </div><!-- .col -->
-                    <div class="col-md-6 col-lg-12">
-                        <div class="card card-bordered card-full">
-                            <div class="card-inner">
-                                <div class="card-title-group align-start mb-3">
-                                    <div class="card-title">
-                                        <h6 class="title">User Activities</h6>
-                                        <p>In last 30 days <em class="icon ni ni-info" data-toggle="tooltip" data-placement="right" title="Referral Informations"></em></p>
-                                    </div>
-                                    <div class="card-tools mt-n1 mr-n1">
-                                        <div class="drodown">
-                                            <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
-                                            <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
-                                                <ul class="link-list-opt no-bdr">
-                                                    <li><a href="#"><span>15 Days</span></a></li>
-                                                    <li><a href="#" class="active"><span>30 Days</span></a></li>
-                                                    <li><a href="#"><span>3 Months</span></a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                                    <div class="nk-tb-col tb-col-md text-center">
+                                        <span class="tb-amount">{{ item.horas_extra }}</span>
                                     </div>
                                 </div>
-                                <div class="user-activity-group g-4">
-                                    <div class="user-activity">
-                                        <em class="icon ni ni-users"></em>
-                                        <div class="info">
-                                            <span class="amount">345</span>
-                                            <span class="title">Direct Join</span>
-                                        </div>
-                                    </div>
-                                    <div class="user-activity">
-                                        <em class="icon ni ni-users"></em>
-                                        <div class="info">
-                                            <span class="amount">49</span>
-                                            <span class="title">Referral Join</span>
-                                        </div>
+                            {% empty %}
+                                <div class="nk-tb-item">
+                                    <div class="nk-tb-col">
+                                        <span class="tb-sub">Todavia no hay jornadas procesadas para hoy.</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="user-activity-ck">
-                                <canvas class="usera-activity-chart" id="userActivity"></canvas>
-                            </div>
-                        </div><!-- .card -->
-                    </div><!-- .col -->
-                </div><!-- .row -->
-            </div><!-- .col -->
-        </div><!-- .row -->
-    </div><!-- .nk-block -->
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {% if messages %}

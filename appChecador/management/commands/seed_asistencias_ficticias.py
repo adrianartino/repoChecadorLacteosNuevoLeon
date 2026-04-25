@@ -178,7 +178,7 @@ class Command(BaseCommand):
 
                 h = emp.horario
                 tol = timedelta(minutes=h.tolerancia_entrada or 0)
-                min_extra = h.minimo_minutos_para_contar_extra or 30
+                min_extra = h.minimo_minutos_para_contar_extra or 59
 
                 dia = fecha_ini
                 while dia <= fecha_fin:
